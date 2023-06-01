@@ -10,22 +10,26 @@ const inputDistance = document.querySelector('.form__input--distance');
 const inputDuration = document.querySelector('.form__input--duration');
 const inputCadence = document.querySelector('.form__input--cadence');
 const inputElevation = document.querySelector('.form__input--elevation');
-let map, mapEvent;
 
+//create class workout 
+class Workout {
+  constructor( coords, distance, duration){
+    this.coords = coords;
+    this.distance = distance;
+    this.duration = duration;
+  }
+  
+}
 
 // Create class App
 class App {
   #map;
   #mapEvent;
+
   constructor() {
     this._getPosition();
-    form.addEventListener('submit', this._newWorkout);
-    
-    
-    inputType.addEventListener('change', function() {
-      inputElevation.closest('.form__row').classList.toggle('form__row--hidden');
-      inputCadence.closest('.form__row').classList.toggle('form__row--hidden');
-    });
+    form.addEventListener('submit', this._newWorkout.bind(this));
+    inputType.addEventListener('change', this._toggleElevationField.bind(this));
   }
 
   _getPosition() {
@@ -37,8 +41,7 @@ class App {
         }
       );
   }
-  
-  
+
 
   _loadMap(position) {
     const { latitude } = position.coords;
@@ -55,27 +58,24 @@ class App {
     }).addTo(this.#map);
 
     // handling clicks on map
-    this.#map.on('click', function(mapE) {
-      this.#mapEvent = mapE;
-      form.classList.remove('hidden');
-      inputDistance.focus();
-
-
-    });
+    this.#map.on('click', this._showForm.bind(this));
   }
 
-
-  _showForm() {
+  _showForm(mapE) {
+    this.#mapEvent = mapE;
+    form.classList.remove('hidden');
+    inputDistance.focus();
   }
+
 
   _toggleElevationField() {
+    inputElevation.closest('.form__row').classList.toggle('form__row--hidden');
+    inputCadence.closest('.form__row').classList.toggle('form__row--hidden');
   }
 
   _newWorkout(e) {
     e.preventDefault();
-    
     inputDistance.value = inputDuration.value = inputCadence.value = inputElevation.value = '';
-
     // Display marker
     const { lat, lng } = mapEvent.latlng;
     L.marker([lat, lng])
@@ -91,10 +91,8 @@ class App {
       .setPopupContent('workout')
       .openPopup();
   }
-
 }
-
-const app = new App();
+let app = new App();
 
 
 
