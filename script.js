@@ -12,47 +12,74 @@ const inputCadence = document.querySelector('.form__input--cadence');
 const inputElevation = document.querySelector('.form__input--elevation');
 let map, mapEvent;
 
-// Geolocation
 
-navigator.geolocation.getCurrentPosition(
-  function(position) {
-    console.log(position);
+// Create class App
+class App {
+  #map;
+  #mapEvent;
+  constructor() {
+    this._getPosition();
+    form.addEventListener('submit', this._newWorkout);
+    
+    
+    inputType.addEventListener('change', function() {
+      inputElevation.closest('.form__row').classList.toggle('form__row--hidden');
+      inputCadence.closest('.form__row').classList.toggle('form__row--hidden');
+    });
+  }
+
+  _getPosition() {
+    if (navigator.geolocation)
+      navigator.geolocation.getCurrentPosition(
+        this._loadMap.bind(this),
+        function() {
+          alert('Could not get your position');
+        }
+      );
+  }
+  
+  
+
+  _loadMap(position) {
     const { latitude } = position.coords;
     const { longitude } = position.coords;
     console.log(`https://www.google.be/maps/@${latitude},${longitude}`);
 
     const coords = [latitude, longitude];
+    console.log(this);
 
-    map = L.map('map').setView(coords, 13);
+    this.#map = L.map('map').setView(coords, 13);
 
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    }).addTo(map);
+    }).addTo(this.#map);
 
-// handling clicks on map
-    map.on('click', function(mapE) {
-      mapEvent = mapE;
+    // handling clicks on map
+    this.#map.on('click', function(mapE) {
+      this.#mapEvent = mapE;
       form.classList.remove('hidden');
       inputDistance.focus();
 
 
     });
-  },
-  function() {
-    alert('Could not get your position');
   }
-);
 
-form.addEventListener('submit', function(e) {
+
+  _showForm() {
+  }
+
+  _toggleElevationField() {
+  }
+
+  _newWorkout(e) {
     e.preventDefault();
-
-    // clear inputfields
+    
     inputDistance.value = inputDuration.value = inputCadence.value = inputElevation.value = '';
 
     // Display marker
     const { lat, lng } = mapEvent.latlng;
     L.marker([lat, lng])
-      .addTo(map)
+      .addTo(this.#map)
       .bindPopup(L.popup({
           maxWidth: 250,
           minWidth: 100,
@@ -61,12 +88,13 @@ form.addEventListener('submit', function(e) {
           className: 'running-popup'
         })
       )
-      .setPopupContent('Workout')
+      .setPopupContent('workout')
       .openPopup();
   }
-);
 
-inputType.addEventListener('change', function() {
-  inputElevation.closest('.form__row').classList.toggle('form__row--hidden');
-  inputCadence.closest('.form__row').classList.toggle('form__row--hidden');
-});
+}
+
+const app = new App();
+
+
+
